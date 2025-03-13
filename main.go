@@ -13,15 +13,17 @@ import (
 )
 
 type Userinfo struct {
-	Username string `form:"username" gorm:"primarykey"`
+	gorm.Model
+	Username string `form:"username"`
 	Password string `form:"password"`
 }
 
 var DB *gorm.DB
 
-func isHaveAccount(isOpen bool) gin.HandlerFunc {
+func LoginAccount(isOn bool) gin.HandlerFunc {
 	var userInfo Userinfo
 	return func(ctx *gin.Context) {
+		haveAccount := ctx.PostForm("HaveAccount")
 		err := ctx.ShouldBind(&userInfo)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{
@@ -30,7 +32,7 @@ func isHaveAccount(isOpen bool) gin.HandlerFunc {
 			ctx.Abort()
 			return
 		}
-		if !isOpen {
+		if !isOn || haveAccount == "false" {
 			ctx.Next()
 		} else {
 			var userInfo_db Userinfo
@@ -46,10 +48,28 @@ func isHaveAccount(isOpen bool) gin.HandlerFunc {
 				})
 				ctx.Abort()
 			} else {
-				ctx.Set("Username", userInfo_db.Username)
 				ctx.Next()
 			}
 		}
+	}
+}
+
+func CreateAccount(isOn bool) gin.HandlerFunc {
+	var userInfo Userinfo
+	return func(ctx *gin.Context) {
+		haveAccount := ctx.PostForm("HaveAccount")
+		err := ctx.ShouldBind(&userInfo)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{
+				"ERROR": err.Error(),
+			})
+			ctx.Abort()
+			return
+		}
+		if haveAccount == "false" {
+			DB.Create(&userInfo)
+		}
+		ctx.Next()
 	}
 }
 
@@ -62,19 +82,33 @@ func main() {
 	}
 	DB = db
 	db.AutoMigrate(&Userinfo{})
+
 	router := gin.Default()
 	router.LoadHTMLGlob("./HTML/*")
+
 	router.GET("/login", func(ctx *gin.Context) {
 		ctx.HTML(http.StatusOK, "login.html", nil)
 	})
-	router.POST("/login", isHaveAccount(true), func(ctx *gin.Context) {
-		username, exists := ctx.Get("Username")
-		if !exists {
-			username = "匿名用户"
+
+	router.GET("/register", func(ctx *gin.Context) {
+		ctx.HTML(http.StatusOK, "register.html", nil)
+	})
+
+	router.POST("/mainpage", LoginAccount(true), CreateAccount(true), func(ctx *gin.Context) {
+		var userInfo Userinfo
+		err := ctx.ShouldBind(&userInfo)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{
+				"ERROR": err.Error(),
+			})
+			ctx.Abort()
+			return
 		}
+
 		ctx.HTML(http.StatusOK, "blogpage.html", gin.H{
-			"Username": username,
+			"Username": userInfo.Username,
 		})
 	})
+
 	router.Run()
 }

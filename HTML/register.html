@@ -7,7 +7,7 @@
 </head>
 <body>
     <div>
-        <h1>Login</h1>
+        <h1>Register</h1>
     </div>
     <form action="/mainpage" method="post">
         <div>
@@ -19,15 +19,12 @@
             <input type="password" name="password" id="password" placeholder="密码">
         </div>
         <div>
-            <input type="text" name="HaveAccount" value="true" hidden>
-            <button type="submit">登录</button>
+            <input type="text" name="HaveAccount" value="false" hidden>
+            <button type="submit">注册</button>
         </div>
     </form>
     <div>
         {{.Status}}
     </div>
-    <p>
-    没有账号？<a href="http://localhost:8080/register">立即注册</a>
-    </p>
 </body>
 </html>
