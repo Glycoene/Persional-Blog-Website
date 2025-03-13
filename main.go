@@ -17,7 +17,7 @@ type Userinfo struct {
 	Password string `form:"password"`
 }
 
-var db *gorm.DB
+var DB *gorm.DB
 
 func isHaveAccount(isOpen bool) gin.HandlerFunc {
 	var userInfo Userinfo
@@ -34,7 +34,7 @@ func isHaveAccount(isOpen bool) gin.HandlerFunc {
 			ctx.Next()
 		} else {
 			var userInfo_db Userinfo
-			result := db.Where("Username = ?", userInfo.Username).First(&userInfo_db)
+			result := DB.Where("Username = ?", userInfo.Username).First(&userInfo_db)
 			if result.RowsAffected == 0 {
 				ctx.HTML(http.StatusOK, "login.html", gin.H{
 					"Status": "用户名不存在",
@@ -60,6 +60,7 @@ func main() {
 		fmt.Println(err.Error())
 		return
 	}
+	DB = db
 	db.AutoMigrate(&Userinfo{})
 	router := gin.Default()
 	router.LoadHTMLGlob("./HTML/*")
