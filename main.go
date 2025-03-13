@@ -54,8 +54,8 @@ func isHaveAccount(isOpen bool) gin.HandlerFunc {
 }
 
 func main() {
-	dsn := "root:Sb143843819438@tcp(127.0.0.1:3306)/Blog?charset=utf8mb4&parseTime=True&loc=Local"
-	db, err := gorm.Open(mysql.Open(dsn))
+	dsn := "root:rootpassword@tcp(127.0.0.1:3306)/Blog?charset=utf8mb4&parseTime=True&loc=Local"
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		fmt.Println(err.Error())
 		return
@@ -67,7 +67,10 @@ func main() {
 		ctx.HTML(http.StatusOK, "login.html", nil)
 	})
 	router.POST("/login", isHaveAccount(true), func(ctx *gin.Context) {
-		username := ctx.MustGet("Username")
+		username, exists := ctx.Get("Username")
+		if !exists {
+			username = "匿名用户"
+		}
 		ctx.HTML(http.StatusOK, "blogpage.html", gin.H{
 			"Username": username,
 		})
