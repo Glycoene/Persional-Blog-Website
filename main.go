@@ -65,14 +65,8 @@ func CreateAccount(isOn bool) gin.HandlerFunc {
 	var userInfo Userinfo
 	return func(ctx *gin.Context) {
 		haveAccount := ctx.PostForm("HaveAccount")
-		err := ctx.ShouldBind(&userInfo)
-		if err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{
-				"ERROR": err.Error(),
-			})
-			ctx.Abort()
-			return
-		}
+		userInfo.Username = ctx.PostForm("username")
+		userInfo.Password = ctx.PostForm("password")
 		if haveAccount == "false" {
 			var userInfo_db Userinfo
 			result := DB.Where("Username = ?", userInfo.Username).First(&userInfo_db)
@@ -104,6 +98,11 @@ func main() {
 	router.LoadHTMLGlob("./HTML/*")
 
 	var userInfo Userinfo
+
+	router.GET("/", func(ctx *gin.Context) {
+		ctx.Request.URL.Path = "/login"
+		router.HandleContext(ctx)
+	})
 
 	router.GET("/login", func(ctx *gin.Context) {
 		ctx.HTML(http.StatusOK, "login.html", nil)
@@ -224,6 +223,14 @@ func main() {
 		blogInfo_db.Title = blogInfo.Title
 		blogInfo_db.Text = blogInfo.Text
 		db.Save(&blogInfo_db)
+		ctx.HTML(http.StatusOK, "mainpage.html", gin.H{
+			"Username": userInfo.Username,
+		})
+	})
+
+	router.POST("/deleteblog", func(ctx *gin.Context) {
+		id := ctx.PostForm("ID")
+		db.Delete(&BlogTemplate{}, id)
 		ctx.HTML(http.StatusOK, "mainpage.html", gin.H{
 			"Username": userInfo.Username,
 		})
