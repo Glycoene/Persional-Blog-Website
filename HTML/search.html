@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Search</h1>
+    <form action="/searchblog" method="post">
+        <div>
+            <label for="title">搜索标题：</label>
+            <input type="text" name="title" id="title">
+            <button type="submit">搜索</button>
+        </div>
+    </form>
+    <div>{{.Status}}</div>
+    <div>
+        <form action="/blogpage" method="get">
+            <input type="text" name="title" value="{{.Title}}" hidden>
+            <input type="text" name="text" value="{{.Text}}" hidden>
+            <input type="text" name="author" value="{{.Author}}" hidden>
+            <button type="submit">{{.Title}}</button>{{.Author}}
+        </form>
+    </div>
+</body>
+</html>

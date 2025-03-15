@@ -113,12 +113,12 @@ func main() {
 
 	router.POST("/mainpage", LoginAccount(true), CreateAccount(true), func(ctx *gin.Context) {
 		username := ctx.PostForm("username")
-		ctx.HTML(http.StatusOK, "blogpage.html", gin.H{
+		ctx.HTML(http.StatusOK, "mainpage.html", gin.H{
 			"Username": username,
 		})
 	})
 
-	router.POST("/add", func(ctx *gin.Context) {
+	router.POST("/addpage", func(ctx *gin.Context) {
 		ctx.HTML(http.StatusOK, "add.html", gin.H{
 			"Username": ctx.PostForm("username"),
 		})
@@ -136,6 +136,35 @@ func main() {
 		db.Create(&blogInfo)
 		ctx.Request.URL.Path = "/mainpage"
 		router.HandleContext(ctx)
+	})
+
+	router.POST("/searchpage", func(ctx *gin.Context) {
+		ctx.HTML(http.StatusOK, "search.html", nil)
+	})
+
+	router.POST("/searchblog", func(ctx *gin.Context) {
+		var blogInfo BlogTemplate
+		title := ctx.PostForm("title")
+		result := db.Where("Title = ?", title).First(&blogInfo)
+		if result.RowsAffected == 0 {
+			ctx.HTML(http.StatusOK, "search.html", gin.H{
+				"Status": "无结果",
+			})
+			return
+		}
+		ctx.HTML(http.StatusOK, "search.html", gin.H{
+			"Title":  blogInfo.Title,
+			"Text":   blogInfo.Text,
+			"Author": blogInfo.Username,
+		})
+	})
+
+	router.GET("/blogpage", func(ctx *gin.Context) {
+		ctx.HTML(http.StatusOK, "blogpage.html", gin.H{
+			"Title":  ctx.Query("title"),
+			"Text":   ctx.Query("text"),
+			"Author": ctx.Query("author"),
+		})
 	})
 
 	router.Run()
