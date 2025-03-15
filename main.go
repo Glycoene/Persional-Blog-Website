@@ -20,9 +20,9 @@ type Userinfo struct {
 
 type BlogTemplate struct {
 	gorm.Model
-	Username string `form:"username"`
-	Title    string `form:"title"`
-	Text     string `form:"text"`
+	Author string `form:"author"`
+	Title  string `form:"title"`
+	Text   string `form:"text"`
 }
 
 var DB *gorm.DB
@@ -103,6 +103,8 @@ func main() {
 	router := gin.Default()
 	router.LoadHTMLGlob("./HTML/*")
 
+	var userInfo Userinfo
+
 	router.GET("/login", func(ctx *gin.Context) {
 		ctx.HTML(http.StatusOK, "login.html", nil)
 	})
@@ -112,16 +114,15 @@ func main() {
 	})
 
 	router.POST("/mainpage", LoginAccount(true), CreateAccount(true), func(ctx *gin.Context) {
-		username := ctx.PostForm("username")
+		userInfo.Username = ctx.PostForm("username")
+		userInfo.Password = ctx.PostForm("password")
 		ctx.HTML(http.StatusOK, "mainpage.html", gin.H{
-			"Username": username,
+			"Username": userInfo.Username,
 		})
 	})
 
 	router.POST("/addpage", func(ctx *gin.Context) {
-		ctx.HTML(http.StatusOK, "add.html", gin.H{
-			"Username": ctx.PostForm("username"),
-		})
+		ctx.HTML(http.StatusOK, "add.html", nil)
 	})
 
 	router.POST("/addblog", func(ctx *gin.Context) {
@@ -133,9 +134,11 @@ func main() {
 			})
 			return
 		}
+		blogInfo.Author = userInfo.Username
 		db.Create(&blogInfo)
-		ctx.Request.URL.Path = "/mainpage"
-		router.HandleContext(ctx)
+		ctx.HTML(http.StatusOK, "mainpage.html", gin.H{
+			"Username": userInfo.Username,
+		})
 	})
 
 	router.POST("/searchpage", func(ctx *gin.Context) {
@@ -155,16 +158,32 @@ func main() {
 		ctx.HTML(http.StatusOK, "search.html", gin.H{
 			"Title":  blogInfo.Title,
 			"Text":   blogInfo.Text,
-			"Author": blogInfo.Username,
+			"Author": blogInfo.Author,
 		})
 	})
 
-	router.GET("/blogpage", func(ctx *gin.Context) {
-		ctx.HTML(http.StatusOK, "blogpage.html", gin.H{
-			"Title":  ctx.Query("title"),
-			"Text":   ctx.Query("text"),
-			"Author": ctx.Query("author"),
-		})
+	router.POST("/blogpage", func(ctx *gin.Context) {
+		var blogInfo BlogTemplate
+		err := ctx.ShouldBind(&blogInfo)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{
+				"ERROR": err.Error(),
+			})
+			return
+		}
+		if userInfo.Username == blogInfo.Author {
+			ctx.HTML(http.StatusOK, "blogpageCU.html", gin.H{
+				"Title":  blogInfo.Title,
+				"Text":   blogInfo.Text,
+				"Author": blogInfo.Author,
+			})
+		} else {
+			ctx.HTML(http.StatusOK, "blogpageCtU.html", gin.H{
+				"Title":  blogInfo.Title,
+				"Text":   blogInfo.Text,
+				"Author": blogInfo.Author,
+			})
+		}
 	})
 
 	router.Run()

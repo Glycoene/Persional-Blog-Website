@@ -9,7 +9,6 @@
     <div>
         <h1>{{.Username}}, 欢迎</h1>
         <form action="/addpage" method="post">
-            <input type="text" name="username" value="{{.Username}}" hidden>
             <button type="submit">新建博客</button>
         </form>
         <form action="/searchpage" method="post">

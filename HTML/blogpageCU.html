@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div>
+        <form action="/update" method="post">
+            <button type="submit">修改</button>
+        </form>
+        <form action="/delete" method="post">
+            <button type="submit">删除</button>
+        </form>
+    </div>
+    <h1>{{.Title}}</h1>
+    <br>
+    <h3>{{.Author}}</h3>
+    <br>
+    <p>{{.Text}}</p>
+</body>
+</html>
