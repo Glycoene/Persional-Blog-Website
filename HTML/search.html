@@ -17,6 +17,7 @@
     <div>{{.Status}}</div>
     <div>
         <form action="/blogpage" method="post">
+            <input type="text" name="ID" value="{{.ID}}" hidden>
             <input type="text" name="title" value="{{.Title}}" hidden>
             <input type="text" name="text" value="{{.Text}}" hidden>
             <input type="text" name="author" value="{{.Author}}" hidden>

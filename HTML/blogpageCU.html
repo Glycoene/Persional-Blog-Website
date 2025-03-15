@@ -7,7 +7,10 @@
 </head>
 <body>
     <div>
-        <form action="/update" method="post">
+        <form action="/updatepage" method="post">
+            <input type="text" name="ID" value="{{.ID}}" hidden>
+            <input type="text" name="title" value="{{.Title}}" hidden>
+            <input type="text" name="text" value="{{.Text}}" hidden>
             <button type="submit">修改</button>
         </form>
         <form action="/delete" method="post">

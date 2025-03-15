@@ -156,6 +156,7 @@ func main() {
 			return
 		}
 		ctx.HTML(http.StatusOK, "search.html", gin.H{
+			"ID":     blogInfo.ID,
 			"Title":  blogInfo.Title,
 			"Text":   blogInfo.Text,
 			"Author": blogInfo.Author,
@@ -173,6 +174,7 @@ func main() {
 		}
 		if userInfo.Username == blogInfo.Author {
 			ctx.HTML(http.StatusOK, "blogpageCU.html", gin.H{
+				"ID":     blogInfo.ID,
 				"Title":  blogInfo.Title,
 				"Text":   blogInfo.Text,
 				"Author": blogInfo.Author,
@@ -184,6 +186,47 @@ func main() {
 				"Author": blogInfo.Author,
 			})
 		}
+	})
+
+	router.POST("/updatepage", func(ctx *gin.Context) {
+		var blogInfo BlogTemplate
+		err := ctx.ShouldBind(&blogInfo)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{
+				"ERROR": err.Error(),
+			})
+			return
+		}
+		ctx.HTML(http.StatusOK, "update.html", gin.H{
+			"ID":    blogInfo.ID,
+			"Title": blogInfo.Title,
+			"Text":  blogInfo.Text,
+		})
+	})
+
+	router.POST("/updateblog", func(ctx *gin.Context) {
+		var blogInfo BlogTemplate
+		var blogInfo_db BlogTemplate
+		err := ctx.ShouldBind(&blogInfo)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{
+				"ERROR": err.Error(),
+			})
+			return
+		}
+		result := db.First(&blogInfo_db, blogInfo.ID)
+		if result.RowsAffected == 0 {
+			ctx.HTML(http.StatusOK, "search.html", gin.H{
+				"Status": "无结果",
+			})
+			return
+		}
+		blogInfo_db.Title = blogInfo.Title
+		blogInfo_db.Text = blogInfo.Text
+		db.Save(&blogInfo_db)
+		ctx.HTML(http.StatusOK, "mainpage.html", gin.H{
+			"Username": userInfo.Username,
+		})
 	})
 
 	router.Run()
