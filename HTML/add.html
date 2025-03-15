@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div>
+        <h1>Add</h1>
+    </div>
+    <form action="/addblog" method="post">
+        <div>
+            <label for="title">标题</label>
+            <input type="text" name="title" id="title">
+        </div>
+        <div>
+            <label for="text">正文</label>
+        </div>
+        <div>
+            <textarea name="text" id="text" style="width: 1000px; height: 500px;"></textarea>
+        </div>
+        <div>
+            <input type="text" name="username" value="{{.Username}}" hidden>
+            <button type="submit">发表</button>
+        </div>
+    </form>
+</body>
+</html>

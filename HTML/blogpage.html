@@ -6,6 +6,12 @@
     <title>Document</title>
 </head>
 <body>
-    <h1>{{.Username}}, 欢迎</h1>
+    <div>
+        <h1>{{.Username}}, 欢迎</h1>
+        <form action="/add" method="post">
+            <input type="text" name="username" value="{{.Username}}" hidden>
+            <button type="submit">新建博客</button>
+        </form>
+    </div>
 </body>
 </html>

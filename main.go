@@ -18,6 +18,13 @@ type Userinfo struct {
 	Password string `form:"password"`
 }
 
+type BlogTemplate struct {
+	gorm.Model
+	Username string `form:"username"`
+	Title    string `form:"title"`
+	Text     string `form:"text"`
+}
+
 var DB *gorm.DB
 
 func LoginAccount(isOn bool) gin.HandlerFunc {
@@ -67,7 +74,16 @@ func CreateAccount(isOn bool) gin.HandlerFunc {
 			return
 		}
 		if haveAccount == "false" {
-			DB.Create(&userInfo)
+			var userInfo_db Userinfo
+			result := DB.Where("Username = ?", userInfo.Username).First(&userInfo_db)
+			if result.RowsAffected == 1 {
+				ctx.HTML(http.StatusOK, "register.html", gin.H{
+					"Status": "用户已存在，请更改用户名或登录",
+				})
+				ctx.Abort()
+			} else {
+				DB.Create(&userInfo)
+			}
 		}
 		ctx.Next()
 	}
@@ -82,6 +98,7 @@ func main() {
 	}
 	DB = db
 	db.AutoMigrate(&Userinfo{})
+	db.AutoMigrate(&BlogTemplate{})
 
 	router := gin.Default()
 	router.LoadHTMLGlob("./HTML/*")
@@ -95,19 +112,30 @@ func main() {
 	})
 
 	router.POST("/mainpage", LoginAccount(true), CreateAccount(true), func(ctx *gin.Context) {
-		var userInfo Userinfo
-		err := ctx.ShouldBind(&userInfo)
+		username := ctx.PostForm("username")
+		ctx.HTML(http.StatusOK, "blogpage.html", gin.H{
+			"Username": username,
+		})
+	})
+
+	router.POST("/add", func(ctx *gin.Context) {
+		ctx.HTML(http.StatusOK, "add.html", gin.H{
+			"Username": ctx.PostForm("username"),
+		})
+	})
+
+	router.POST("/addblog", func(ctx *gin.Context) {
+		var blogInfo BlogTemplate
+		err := ctx.ShouldBind(&blogInfo)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{
 				"ERROR": err.Error(),
 			})
-			ctx.Abort()
 			return
 		}
-
-		ctx.HTML(http.StatusOK, "blogpage.html", gin.H{
-			"Username": userInfo.Username,
-		})
+		db.Create(&blogInfo)
+		ctx.Request.URL.Path = "/mainpage"
+		router.HandleContext(ctx)
 	})
 
 	router.Run()
