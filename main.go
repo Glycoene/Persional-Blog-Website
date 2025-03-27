@@ -67,6 +67,10 @@ func CreateAccount(isOn bool) gin.HandlerFunc {
 		haveAccount := ctx.PostForm("HaveAccount")
 		userInfo.Username = ctx.PostForm("username")
 		userInfo.Password = ctx.PostForm("password")
+		if !isOn {
+			ctx.Next()
+			return
+		}
 		if haveAccount == "false" {
 			var userInfo_db Userinfo
 			result := DB.Where("Username = ?", userInfo.Username).First(&userInfo_db)
@@ -91,8 +95,8 @@ func main() {
 		return
 	}
 	DB = db
-	db.AutoMigrate(&Userinfo{})
-	db.AutoMigrate(&BlogTemplate{})
+	_ = db.AutoMigrate(&Userinfo{})
+	_ = db.AutoMigrate(&BlogTemplate{})
 
 	router := gin.Default()
 	router.LoadHTMLGlob("./HTML/*")
@@ -236,5 +240,5 @@ func main() {
 		})
 	})
 
-	router.Run()
+	_ = router.Run()
 }
